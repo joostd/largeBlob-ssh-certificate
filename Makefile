@@ -31,13 +31,13 @@ issue: id_ecdsa-cert.pub
 
 # Generate a resident SSH key on a security key
 id_ecdsa id_ecdsa.pub:
-	ssh-keygen -t ecdsa-sk -f ./id_ecdsa -O resident -N ""
+	ssh-keygen -t ecdsa-sk -f ./id_ecdsa -N "" -O resident -O application=ssh:demo -O user=me
 
 # have the CA sign your pubkey into a SSH certificate,
 # and store the certificate in a largeBLob on your security key
 id_ecdsa-cert.pub: id_ca id_ecdsa.pub
 	ssh-keygen -s ./id_ca -I me@example.org id_ecdsa.pub 
-	fido2-token -S -b -n ssh: id_ecdsa-cert.pub ${HID} 
+	fido2-token -S -b -n ssh:demo id_ecdsa-cert.pub ${HID} 
 
 ### list the contents of your security key
 
@@ -45,34 +45,33 @@ id_ecdsa-cert.pub: id_ca id_ecdsa.pub
 list:
 	fido2-token -L -b ${HID}
 	#fido2-token -L -r ${HID} 
-	fido2-token -L -k ssh: ${HID} 
+	fido2-token -L -k ssh:demo ${HID} 
 
 ###
 ### restore all files on a new system
 ###
 
-restore: id_ecdsa_sk_rk id_ecdsa_sk_rk.pub id_ecdsa_sk_rk-cert.pub
-	ssh-keygen -f id_ecdsa_sk_rk-cert.pub -L
+restore: id_ecdsa_sk_rk_demo_me id_ecdsa_sk_rk_demo_me.pub id_ecdsa_sk_rk_demo_me-cert.pub
+	ssh-keygen -f id_ecdsa_sk_rk_demo_me-cert.pub -L
 
 # extract the SSH key files from your security key
-id_ecdsa_sk_rk id_ecdsa_sk_rk.pub:
+id_ecdsa_sk_rk_demo_me id_ecdsa_sk_rk_demo_me.pub:
 	ssh-keygen -K
 
 # extract the SSH certificate from your security key
-id_ecdsa_sk_rk-cert.pub:
-	fido2-token -G -b -n ssh: id_ecdsa_sk_rk-cert.pub ${HID} 
+id_ecdsa_sk_rk_demo_me-cert.pub:
+	fido2-token -G -b -n ssh:demo id_ecdsa_sk_rk_demo_me-cert.pub ${HID} 
 
 ###
 ### cleanup
 ###
 
 clean:
-	-rm id_ecdsa id_ecdsa-cert.pub id_ecdsa.pub id_ecdsa_sk_rk-cert.pub id_ecdsa_sk_rk.pub id_ecdsa_sk_rk
-
+	-rm id_ecdsa id_ecdsa-cert.pub id_ecdsa.pub id_ecdsa_sk_rk_demo_me id_ecdsa_sk_rk_demo_me.pub id_ecdsa_sk_rk_demo_me-cert.pub
 caclean:
 	-rm id_ca id_ca.pub
 
 # clear the resident credential and certificate from your security key
 realclean: 
-	fido2-token -D -b -n ssh: ${HID}
-	fido2-token -D -i $(shell fido2-token -Lk ssh: ${HID} | cut -d' ' -f2) ${HID}
+	fido2-token -D -b -n ssh:demo ${HID}
+	fido2-token -D -i $(shell fido2-token -Lk ssh:demo ${HID} | cut -d' ' -f2) ${HID}
