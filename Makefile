@@ -3,6 +3,12 @@
 HID="$(shell fido2-token -L | head -1 | cut -d: -f1-2)"
 # uses the first key listed
 
+usage:
+	@echo usage:
+	@echo make issue - generate and store an SSH certificate a FIDO security key
+	@echo make clean - remove all generated SSH files
+	@echo make restore - restore all SSH files from your FIDO security key
+
 # check if largeBlobs are supported on your key
 # Use for instance a YubiKey with 5.5+ firmware like the YubiKey Bio
 check:
@@ -14,7 +20,7 @@ check:
 
 # generate the CA key pair
 id_ca id_ca.pub:
-	ssh-keygen -t ecdsa -f id_ca 
+	ssh-keygen -t ecdsa -f id_ca -N ""
 
 ###
 ### SSH certificate
@@ -67,6 +73,6 @@ caclean:
 	-rm id_ca id_ca.pub
 
 # clear the resident credential and certificate from your security key
-realclean:
+realclean: 
 	fido2-token -D -b -n ssh: ${HID}
 	fido2-token -D -i $(shell fido2-token -Lk ssh: ${HID} | cut -d' ' -f2) ${HID}
