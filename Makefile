@@ -59,7 +59,7 @@ restore:
 	ssh-keygen -K
 	fido2-token -G -b -n ssh:${APP} id_ecdsa_sk_rk_${APP}_${USER}-cert.pub ${HID}
 	@echo restored SSH key files and certificate, logon using:
-	@echo "    ssh -i ./id_ecdsa_sk_rk_demo_jvdijk jvdijk@localhost"
+	@echo "    ssh -i ./id_ecdsa_sk_rk_${APP}_${USER} ${USER}@localhost"
 
 ###
 ### Docker
